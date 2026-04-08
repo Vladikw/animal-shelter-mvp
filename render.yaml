@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: animal-shelter-mvp
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd app && uvicorn main:main_app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_CONFIG__DB__URL
+        value: postgresql+asyncpg://postgres.fhamnyduvaftndgvywyc:94H-fD3-PZ7-8kU@aws-1-eu-west-3.pooler.supabase.com:5432/postgres
+      - key: APP_CONFIG__DB__ECHO
+        value: false

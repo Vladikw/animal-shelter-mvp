@@ -1,0 +1,573 @@
+/* ========================================
+   Animal Shelter MVP — Main Styles
+   Стили для всех экранов согласно low-fi wireframes
+   ======================================== */
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f9fafb;
+    color: #1f2937;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ===== Header / Navigation ===== */
+.header {
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: #10b981;
+    text-decoration: none;
+}
+
+.logo span {
+    color: #f59e0b;
+}
+
+.shelter-name {
+    font-size: 14px;
+    color: #6b7280;
+    padding-left: 12px;
+    border-left: 1px solid #e5e7eb;
+}
+
+.auth-btn {
+    background: none;
+    border: 1px solid #10b981;
+    color: #10b981;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auth-btn:hover {
+    background: #10b981;
+    color: white;
+}
+
+/* Navigation tabs */
+.nav-tabs {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 12px 24px 0;
+    display: flex;
+    gap: 32px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.nav-tabs a {
+    padding: 8px 0;
+    text-decoration: none;
+    color: #6b7280;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.nav-tabs a:hover {
+    color: #10b981;
+}
+
+.nav-tabs a.active {
+    color: #10b981;
+    border-bottom-color: #10b981;
+}
+
+/* ===== Hero Section (Главная) ===== */
+.hero {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border-radius: 24px;
+    padding: 48px 40px;
+    margin: 32px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.hero-content {
+    flex: 1;
+}
+
+.hero h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: #065f46;
+    margin-bottom: 16px;
+}
+
+.hero p {
+    font-size: 18px;
+    color: #4b5563;
+    margin-bottom: 28px;
+}
+
+.hero-image {
+    flex: 1;
+    background: #a7f3d0;
+    border-radius: 16px;
+    height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #065f46;
+    font-size: 48px;
+}
+
+.btn-primary {
+    display: inline-block;
+    background: #10b981;
+    color: white;
+    padding: 12px 32px;
+    border-radius: 9999px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: #059669;
+}
+
+.btn-secondary {
+    display: inline-block;
+    background: white;
+    color: #10b981;
+    border: 1px solid #10b981;
+    padding: 10px 28px;
+    border-radius: 9999px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: #ecfdf5;
+}
+
+/* ===== Features ===== */
+.features {
+    margin: 48px 0;
+    text-align: center;
+}
+
+.features h2 {
+    font-size: 28px;
+    margin-bottom: 32px;
+    color: #1f2937;
+}
+
+.features-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+}
+
+.feature-card {
+    flex: 1;
+    min-width: 200px;
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.feature-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+}
+
+.feature-card h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+/* ===== Filters Section (Каталог) ===== */
+.filters-bar {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    min-width: 120px;
+}
+
+.results-count {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 16px;
+}
+
+/* ===== Animal Cards Grid ===== */
+.animals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+}
+
+.animal-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.animal-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
+
+.favorite-btn-card {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+
+.favorite-btn-card.active {
+    color: #f59e0b;
+}
+
+.animal-photo {
+    height: 200px;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: #9ca3af;
+}
+
+.animal-info {
+    padding: 16px;
+}
+
+.animal-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.animal-meta {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+
+.animal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.btn-details {
+    background: none;
+    border: 1px solid #10b981;
+    color: #10b981;
+    padding: 6px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    flex: 1;
+    text-align: center;
+}
+
+.btn-details:hover {
+    background: #ecfdf5;
+}
+
+/* ===== Animal Detail Page (Карточка) ===== */
+.back-link {
+    display: inline-block;
+    margin: 20px 0;
+    color: #10b981;
+    text-decoration: none;
+}
+
+.animal-detail {
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 24px 0;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.detail-photo {
+    flex: 1;
+    min-width: 300px;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 120px;
+    min-height: 400px;
+}
+
+.detail-info {
+    flex: 1;
+    padding: 32px;
+}
+
+.detail-info h1 {
+    font-size: 32px;
+    margin-bottom: 16px;
+}
+
+.info-list {
+    margin: 20px 0;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 0;
+}
+
+.info-row {
+    display: flex;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.info-label {
+    width: 100px;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.info-value {
+    flex: 1;
+    color: #1f2937;
+}
+
+.shelter-info {
+    background: #f3f4f6;
+    padding: 16px;
+    border-radius: 12px;
+    margin: 20px 0;
+}
+
+.detail-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+/* ===== Favorites Page (Избранное) ===== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 24px;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.clear-all-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 24px;
+}
+
+/* ===== Application Form ===== */
+.form-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: white;
+    padding: 32px;
+    border-radius: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-group input {
+    width: auto;
+}
+
+/* ===== Pagination ===== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 40px 0;
+}
+
+.pagination a, .pagination span {
+    padding: 8px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #4b5563;
+}
+
+.pagination a:hover {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+/* ===== Footer ===== */
+.footer {
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 32px 0;
+    margin-top: 60px;
+}
+
+.footer-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 32px;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: #6b7280;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group select {
+        width: 100%;
+    }
+    
+    .nav-tabs {
+        justify-content: center;
+    }
+}

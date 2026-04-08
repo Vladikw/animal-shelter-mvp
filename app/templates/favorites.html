@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Избранное — Помощь хвостикам</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .favorite-age {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-area">
+                <a href="/" class="logo">🐾 <span>Помощь хвостикам</span></a>
+            </div>
+            <button class="auth-btn">Войти / Регистрация</button>
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <a href="/">Поиск</a>
+        <a href="/favorites" class="active">Избранное</a>
+        <a href="#">Личный кабинет</a>
+    </div>
+
+    <div class="container">
+        <h1 style="margin: 24px 0;">Ваши избранные питомцы</h1>
+        
+        <div id="favoritesContainer">
+            <div class="animals-grid" id="favoritesGrid"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#">О нас</a>
+                <a href="#">Контакты</a>
+                <a href="#">Политика конфиденциальности</a>
+            </div>
+            <div>© 2026 Помощь хвостикам</div>
+        </div>
+    </footer>
+
+    <script>
+        // Получение избранного из localStorage
+        function getFavorites() {
+            return JSON.parse(localStorage.getItem('favorites') || '[]');
+        }
+
+        // Сохранение избранного в localStorage
+        function saveFavorites(favorites) {
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+
+        // Преобразование age из кода в текст
+        function getAgeText(ageCode) {
+            if (!ageCode || ageCode === '?' || ageCode === 'null' || ageCode === 'undefined') {
+                return 'Возраст не указан';
+            }
+            const ages = {
+                'baby': 'До 1 года',
+                'young': '1-3 года',
+                'adult': '3-7 лет',
+                'senior': 'Старше 7 лет'
+            };
+            return ages[ageCode] || ageCode;
+        }
+
+        // Удаление из избранного
+        function removeFromFavorites(animalId) {
+            let favorites = getFavorites();
+            const animal = favorites.find(f => f.id === animalId);
+            favorites = favorites.filter(f => f.id !== animalId);
+            saveFavorites(favorites);
+            renderFavorites();
+            alert(`🐾 ${animal?.name || 'Питомец'} удалён(а) из избранного`);
+        }
+
+        // Очистка всего избранного
+        function clearAllFavorites() {
+            if (confirm('Вы уверены, что хотите очистить весь список избранного?')) {
+                saveFavorites([]);
+                renderFavorites();
+            }
+        }
+
+        // Загрузка актуальных данных о животных из API
+        async function enrichFavoritesWithRealData(favorites) {
+            const enriched = [];
+            for (const fav of favorites) {
+                try {
+                    const response = await fetch(`/api/animals/${fav.id}`);
+                    if (response.ok) {
+                        const realAnimal = await response.json();
+                        enriched.push({
+                            id: realAnimal.id,
+                            name: realAnimal.name || fav.name,
+                            type: realAnimal.type,
+                            age: realAnimal.age,
+                            size: realAnimal.size
+                        });
+                    } else {
+                        enriched.push(fav);
+                    }
+                } catch (e) {
+                    console.error(`Ошибка загрузки животного ${fav.id}:`, e);
+                    enriched.push(fav);
+                }
+            }
+            return enriched;
+        }
+
+        // Отображение избранного
+        async function renderFavorites() {
+            let favorites = getFavorites();
+            const grid = document.getElementById('favoritesGrid');
+            
+            if (!favorites.length) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">🐾❤️</div>
+                        <h3>У вас пока нет избранных питомцев</h3>
+                        <p>Сохраняйте понравившихся животных, чтобы вернуться к ним позже</p>
+                        <a href="/animals" class="btn-primary" style="margin-top: 20px;">Найти питомца</a>
+                    </div>
+                `;
+                // Убираем кнопку очистки
+                const clearBtn = document.getElementById('clearAllBtn');
+                if (clearBtn) clearBtn.remove();
+                return;
+            }
+
+            // Показываем индикатор загрузки
+            grid.innerHTML = '<div style="text-align:center; padding:60px;">🔄 Загрузка актуальной информации...</div>';
+            
+            // Загружаем актуальные данные
+            const enrichedFavorites = await enrichFavoritesWithRealData(favorites);
+            
+            // Обновляем localStorage с актуальными данными
+            saveFavorites(enrichedFavorites);
+            
+            // Отображаем карточки
+            grid.innerHTML = enrichedFavorites.map(animal => `
+                <div class="animal-card">
+                    <button class="favorite-btn-card active" onclick="removeFromFavorites(${animal.id})" style="position: absolute; top: 12px; right: 12px; background: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 20px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #f59e0b;">★</button>
+                    <div class="animal-photo" style="height: 200px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 48px;">
+                        ${animal.type === 'dog' ? '🐕' : '🐈'}
+                    </div>
+                    <div class="animal-info">
+                        <div class="animal-name" style="font-size: 18px; font-weight: 700;">${escapeHtml(animal.name || 'Безымянный герой')}</div>
+                        <div class="animal-meta" style="font-size: 14px; color: #6b7280; margin: 8px 0;">
+                            ${animal.type === 'dog' ? '🐕 Собака' : '🐈 Кошка'}
+                        </div>
+                        <div class="favorite-age" style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">
+                            📅 ${getAgeText(animal.age)}
+                        </div>
+                        <div class="animal-actions" style="display: flex; gap: 12px;">
+                            <a href="/animal/${animal.id}" class="btn-details" style="flex: 1; text-align: center; background: none; border: 1px solid #10b981; color: #10b981; padding: 8px; border-radius: 8px; text-decoration: none; font-size: 13px;">ПОДРОБНЕЕ →</a>
+                            <button onclick="removeFromFavorites(${animal.id})" class="btn-details" style="flex: 1; border-color: #ef4444; color: #ef4444; background: none; padding: 8px; border-radius: 8px; cursor: pointer;">Удалить</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Добавляем кнопку "Очистить всё"
+            addClearButton();
+        }
+
+        function addClearButton() {
+            const container = document.getElementById('favoritesContainer');
+            let clearBtn = document.getElementById('clearAllBtn');
+            
+            if (clearBtn) clearBtn.remove();
+            
+            const favorites = getFavorites();
+            if (favorites.length > 0) {
+                clearBtn = document.createElement('button');
+                clearBtn.id = 'clearAllBtn';
+                clearBtn.className = 'clear-all-btn';
+                clearBtn.textContent = '🗑️ Очистить всё';
+                clearBtn.onclick = clearAllFavorites;
+                clearBtn.style.cssText = 'background: #ef4444; color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-size: 14px;';
+                container.insertBefore(clearBtn, container.firstChild);
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Загружаем избранное при загрузке страницы
+        renderFavorites();
+    </script>
+</body>
+</html>

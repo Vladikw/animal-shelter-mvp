@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог животных — Помощь хвостикам</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-area">
+                <a href="/" class="logo">🐾 <span>Помощь хвостикам</span></a>
+            </div>
+            <button class="auth-btn">Войти / Регистрация</button>
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <a href="/">Поиск</a>
+        <a href="/favorites">Избранное</a>
+        <a href="#">Личный кабинет</a>
+    </div>
+
+    <div class="container">
+        <!-- Фильтры -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Вид ▼</label>
+                <select id="filterType">
+                    <option value="">Все</option>
+                    <option value="dog">Собаки</option>
+                    <option value="cat">Кошки</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Возраст ▼</label>
+                <select id="filterAge">
+                    <option value="">Любой</option>
+                    <option value="baby">До 1 года</option>
+                    <option value="young">1-3 года</option>
+                    <option value="adult">3-7 лет</option>
+                    <option value="senior">Старше 7 лет</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Размер ▼</label>
+                <select id="filterSize">
+                    <option value="">Любой</option>
+                    <option value="small">Маленький</option>
+                    <option value="medium">Средний</option>
+                    <option value="large">Большой</option>
+                </select>
+            </div>
+
+            <button class="btn-primary" id="applyFilters" style="padding: 8px 24px;">ПРИМЕНИТЬ</button>
+            <button class="btn-secondary" id="resetFilters" style="padding: 8px 24px;">🔄 Сбросить</button>
+        </div>
+
+        <div class="results-count" id="resultsCount">Загрузка...</div>
+
+        <div class="animals-grid" id="animalsGrid">
+            <div class="animal-card">
+                <div class="animal-photo">🐕</div>
+                <div class="animal-info">
+                    <div class="animal-name">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#">О нас</a>
+                <a href="#">Контакты</a>
+                <a href="#">Политика конфиденциальности</a>
+            </div>
+            <div>© 2026 Помощь хвостикам</div>
+        </div>
+    </footer>
+
+    <script>
+        let currentSkip = 0;
+        const limit = 9;
+
+        // Получение избранного из localStorage
+        function getFavorites() {
+            return JSON.parse(localStorage.getItem('favorites') || '[]');
+        }
+
+        // Сохранение избранного в localStorage
+        function saveFavorites(favorites) {
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+
+        // Проверка, находится ли животное в избранном
+        function isFavorite(animalId) {
+            const favorites = getFavorites();
+            return favorites.some(f => f.id === animalId);
+        }
+
+        // Добавление/удаление из избранного
+        function toggleFavorite(animalId, animalName, animalType, animalAge) {
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const exists = favorites.some(f => f.id === animalId);
+            
+            if (exists) {
+                favorites = favorites.filter(f => f.id !== animalId);
+                alert(`🐾 ${animalName} удалён(а) из избранного`);
+            } else {
+                favorites.push({ 
+                    id: animalId, 
+                    name: animalName, 
+                    type: animalType, 
+                    age: animalAge  // ← ВОТ ЭТО ГЛАВНОЕ: сохраняем реальный возраст
+                });
+                alert(`❤️ ${animalName} добавлен(а) в избранное!`);
+            }
+            
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            updateAllFavoriteIcons();
+        }
+        function updateAllFavoriteIcons() {
+            const favorites = getFavorites();
+            const favoriteIds = new Set(favorites.map(f => f.id));
+            
+            document.querySelectorAll('.favorite-btn-card').forEach(btn => {
+                const id = parseInt(btn.dataset.id);
+                if (favoriteIds.has(id)) {
+                    btn.textContent = '★';
+                    btn.classList.add('active');
+                } else {
+                    btn.textContent = '☆';
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        
+        async function loadAnimals() {
+            const type = document.getElementById('filterType').value;
+            const age = document.getElementById('filterAge').value;
+            const size = document.getElementById('filterSize').value;
+            
+            let url = `/api/animals?skip=${currentSkip}&limit=${limit}`;
+            if (type) url += `&type=${type}`;
+            if (age) url += `&age=${age}`;
+            if (size) url += `&size=${size}`;
+            
+            console.log('Запрос:', url);
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const animals = await response.json();
+                console.log('Получено животных:', animals.length);
+                document.getElementById('resultsCount').innerHTML = `Найдено: ${animals.length} животных`;
+                renderAnimals(animals);
+            } catch (e) {
+                console.error('Ошибка загрузки:', e);
+                // Демо-данные для теста, если сервер не отвечает
+                const demoAnimals = [
+                    { id: 1, name: 'Бобик', type: 'dog', age: 'young', size: 'medium' },
+                    { id: 2, name: 'Мурка', type: 'cat', age: 'adult', size: 'small' },
+                    { id: 3, name: 'Шарик', type: 'dog', age: 'baby', size: 'medium' },
+                    { id: 4, name: 'Рыжик', type: 'cat', age: 'senior', size: 'medium' },
+                    { id: 5, name: 'Лайма', type: 'dog', age: 'adult', size: 'large' },
+                ];
+                
+                // Фильтруем демо-данные
+                let filtered = demoAnimals;
+                if (type) filtered = filtered.filter(a => a.type === type);
+                if (age) filtered = filtered.filter(a => a.age === age);
+                if (size) filtered = filtered.filter(a => a.size === size);
+                
+                document.getElementById('resultsCount').innerHTML = `Найдено: ${filtered.length} животных (демо)`;
+                renderAnimals(filtered);
+            }
+        }
+
+        // Функция сброса фильтров
+        function resetFilters() {
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterAge').value = '';
+            document.getElementById('filterSize').value = '';
+            currentSkip = 0;
+            loadAnimals();
+        }
+
+        // Добавьте обработчик для кнопки сброса
+        document.getElementById('resetFilters')?.addEventListener('click', resetFilters);
+
+    
+        
+        async function renderAnimals(animals) {
+            const grid = document.getElementById('animalsGrid');
+            if (!animals.length) {
+                grid.innerHTML = '<div style="text-align:center; padding:60px;">🐾 Ничего не найдено. Попробуйте изменить фильтры</div>';
+                return;
+            }
+            
+            // Для каждого животного загружаем фото
+            const animalsWithPhotos = await Promise.all(animals.map(async (animal) => {
+                try {
+                    const photoResponse = await fetch(`/api/photos/animal/${animal.id}`);
+                    if (photoResponse.ok) {
+                        const photos = await photoResponse.json();
+                        if (photos.length > 0 && photos[0].url) {
+                            animal.photoUrl = photos[0].url;
+                        } else {
+                            animal.photoUrl = null;
+                        }
+                    } else {
+                        animal.photoUrl = null;
+                    }
+                } catch (e) {
+                    animal.photoUrl = null;
+                }
+                return animal;
+            }));
+            
+            grid.innerHTML = animalsWithPhotos.map(animal => {
+                const isFav = isFavorite(animal.id);
+                const starSymbol = isFav ? '★' : '☆';
+                const starClass = isFav ? 'active' : '';
+                
+                // Если есть фото — показываем его, иначе эмодзи
+                const photoHtml = animal.photoUrl 
+                    ? `<img src="${animal.photoUrl}" style="width: 100%; height: 100%; object-fit: cover;">` 
+                    : (animal.type === 'dog' ? '🐕' : '🐈');
+                
+                return `
+                    <div class="animal-card">
+                        <button class="favorite-btn-card ${starClass}" data-id="${animal.id}" onclick="toggleFavorite(${animal.id}, '${escapeHtml(animal.name || 'Безымянный герой')}', '${animal.type}', '${animal.age || ''}')">${starSymbol}</button>
+                        <div class="animal-photo">
+                            ${photoHtml}
+                        </div>
+                        <div class="animal-info">
+                            <div class="animal-name">${escapeHtml(animal.name || 'Безымянный герой')}</div>
+                            <div class="animal-meta">
+                                ${animal.type === 'dog' ? '🐕 Собака' : '🐈 Кошка'} • 
+                                ${getAgeText(animal.age)} • 
+                                ${getSizeText(animal.size)}
+                            </div>
+                            <div class="animal-actions">
+                                <a href="/animal/${animal.id}" class="btn-details">ПОДРОБНЕЕ →</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function getAgeText(age) {
+            const ages = { baby: 'До года', young: '1-3 года', adult: '3-7 лет', senior: 'Старше 7' };
+            return ages[age] || age || 'Не указан';
+        }
+
+        function getSizeText(size) {
+            const sizes = { small: 'Маленький', medium: 'Средний', large: 'Большой' };
+            return sizes[size] || size || 'Не указан';
+        }
+
+        document.getElementById('applyFilters').addEventListener('click', () => {
+            currentSkip = 0;
+            loadAnimals();
+        });
+
+        // Загружаем животных при загрузке страницы
+        loadAnimals();
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Помощь хвостикам — найди друга в приюте</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-area">
+                <a href="/" class="logo">🐾 <span>Помощь хвостикам</span></a>
+            </div>
+            <button class="auth-btn" id="authBtn">Войти / Регистрация</button>
+        </div>
+    </header>
+
+    <!-- Навигация -->
+    <div class="nav-tabs">
+        <a href="/" class="active">Поиск</a>
+        <a href="/favorites">Избранное</a>
+        <a href="#">Личный кабинет</a>
+    </div>
+
+    <div class="container">
+        <!-- Hero секция -->
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Найдите своего питомца в приюте</h1>
+                <p>Централизованная платформа для усыновления животных из приютов</p>
+                <a href="/animals" class="btn-primary">Начать поиск →</a>
+            </div>
+            <div class="hero-image">
+                🐕 🐈 🐾
+            </div>
+        </div>
+
+        <!-- Блок "Почему мы?" -->
+        <div class="features">
+            <h2>Почему мы?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Быстрый поиск</h3>
+                    <p>Фильтры по виду, возрасту, размеру и характеру</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Актуальная информация</h3>
+                    <p>Данные из приютов обновляются ежедневно</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Простая заявка</h3>
+                    <p>Отправьте заявку в один клик</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#">О нас</a>
+                <a href="#">Контакты</a>
+                <a href="#">Политика конфиденциальности</a>
+            </div>
+            <div>© 2026 Помощь хвостикам</div>
+        </div>
+    </footer>
+
+    <script>
+        // Простой обработчик для кнопки авторизации
+        document.getElementById('authBtn')?.addEventListener('click', () => {
+            alert('Авторизация будет доступна в следующей версии');
+        });
+    </script>
+</body>
+</html>

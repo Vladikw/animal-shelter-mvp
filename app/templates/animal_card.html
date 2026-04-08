@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карточка животного — Помощь хвостикам</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-area">
+                <a href="/" class="logo">🐾 <span>Помощь хвостикам</span></a>
+            </div>
+            <button class="auth-btn">Войти / Регистрация</button>
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <a href="/">Поиск</a>
+        <a href="/favorites">Избранное</a>
+        <a href="#">Личный кабинет</a>
+    </div>
+
+    <div class="container">
+        <a href="/animals" class="back-link">← Назад к поиску</a>
+
+        <div class="animal-detail" id="animalDetail">
+            <div class="detail-photo" id="animalPhoto">🐕</div>
+            <div class="detail-info">
+                <h1 id="animalName">Бобик</h1>
+                <div class="info-list">
+                    <div class="info-row"><span class="info-label">Возраст:</span><span class="info-value" id="animalAge">2 года</span></div>
+                    <div class="info-row"><span class="info-label">Порода/Вид:</span><span class="info-value" id="animalType">Дворняга</span></div>
+                    <div class="info-row"><span class="info-label">Размер:</span><span class="info-value" id="animalSize">Средний</span></div>
+                    <div class="info-row"><span class="info-label">Характер:</span><span class="info-value" id="animalPersonality">Дружелюбный</span></div>
+                    <div class="info-row"><span class="info-label">Здоровье:</span><span class="info-value" id="animalHealth">Привит, стерилизован</span></div>
+                </div>
+                <div class="shelter-info">
+                    <strong>🏠 Приют:</strong> <span id="shelterName">"Добрые сердца"</span><br>
+                    <strong>📞 Контакты:</strong> <span id="shelterPhone">+7 (123) 456-78-90</span>
+                </div>
+                <p id="animalDescription">Ласковый и игривый пёс, любит детей, хорошо ладит с другими животными. Ищет заботливую семью!</p>
+                
+                <div class="detail-actions">
+                    <button class="btn-secondary" id="addToFavBtn">❤️ Добавить в избранное</button>
+                    <button class="btn-primary" id="applyBtn">📝 Подать заявку</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#">О нас</a>
+                <a href="#">Контакты</a>
+                <a href="#">Политика конфиденциальности</a>
+            </div>
+            <div>© 2026 Помощь хвостикам</div>
+        </div>
+    </footer>
+
+    <script>
+        // Получаем ID животного из URL: /animal/123
+        const animalId = parseInt(window.location.pathname.split('/').pop());
+        let currentAnimal = null;
+
+        // Работа с избранным
+        function getFavorites() {
+            return JSON.parse(localStorage.getItem('favorites') || '[]');
+        }
+
+        function saveFavorites(favorites) {
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+
+        function isFavorite(animalId) {
+            const favorites = getFavorites();
+            return favorites.some(f => f.id === animalId);
+        }
+
+        function updateFavoriteButton() {
+            const btn = document.getElementById('addToFavBtn');
+            if (!btn || !currentAnimal) return;
+            
+            if (isFavorite(animalId)) {
+                btn.innerHTML = '✅ В избранном';
+                btn.style.background = '#fef3c7';
+                btn.style.color = '#d97706';
+                btn.style.borderColor = '#d97706';
+            } else {
+                btn.innerHTML = '❤️ Добавить в избранное';
+                btn.style.background = 'white';
+                btn.style.color = '#10b981';
+                btn.style.borderColor = '#10b981';
+            }
+        }
+
+        function toggleFavorite() {
+            if (!currentAnimal) return;
+            
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const exists = favorites.some(f => f.id === animalId);
+            
+            if (exists) {
+                favorites = favorites.filter(f => f.id !== animalId);
+                alert(`🐾 ${currentAnimal.name || 'Питомец'} удалён(а) из избранного`);
+            } else {
+                favorites.push({ 
+                    id: animalId, 
+                    name: currentAnimal.name || 'Безымянный герой', 
+                    type: currentAnimal.type,
+                    age: currentAnimal.age  // ← ВОТ ЭТО ГЛАВНОЕ: сохраняем реальный возраст
+                });
+                alert(`❤️ ${currentAnimal.name || 'Питомец'} добавлен(а) в избранное!`);
+            }
+            
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            updateFavoriteButton();
+        }
+
+        // Загрузка данных животного
+        async function loadAnimal() {
+            // Сразу показываем индикатор загрузки
+            document.getElementById('animalName').textContent = 'Загрузка...';
+            document.getElementById('animalAge').textContent = '—';
+            document.getElementById('animalType').textContent = '—';
+            document.getElementById('animalSize').textContent = '—';
+            document.getElementById('animalDescription').textContent = 'Загрузка информации...';
+            
+            try {
+                const response = await fetch(`/api/animals/${animalId}`);
+                if (response.ok) {
+                    currentAnimal = await response.json();
+                    renderAnimal(currentAnimal);
+                } else {
+                    // Показываем сообщение об ошибке вместо Бобика
+                    document.getElementById('animalName').textContent = 'Животное не найдено';
+                    document.getElementById('animalDescription').textContent = `Животное с ID ${animalId} не существует.`;
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки:', e);
+                document.getElementById('animalName').textContent = 'Ошибка загрузки';
+                document.getElementById('animalDescription').textContent = 'Не удалось загрузить данные. Проверьте соединение.';
+            }
+        }
+        
+        async function renderAnimal(animal) {
+            currentAnimal = animal;
+            
+            function getAgeText(ageCode) {
+                const ages = { 
+                    'baby': 'До 1 года', 
+                    'young': '1-3 года', 
+                    'adult': '3-7 лет', 
+                    'senior': 'Старше 7 лет' 
+                };
+                return ages[ageCode] || ageCode || 'Не указан';
+            }
+            
+            function getSizeText(sizeCode) {
+                const sizes = { 
+                    'small': 'Маленький', 
+                    'medium': 'Средний', 
+                    'large': 'Большой' 
+                };
+                return sizes[sizeCode] || sizeCode || 'Не указан';
+            }
+            
+            document.getElementById('animalName').textContent = animal.name || 'Безымянный герой';
+            document.getElementById('animalAge').textContent = getAgeText(animal.age);
+            document.getElementById('animalType').textContent = animal.type === 'dog' ? 'Собака' : 'Кошка';
+            document.getElementById('animalSize').textContent = getSizeText(animal.size);
+            document.getElementById('animalDescription').textContent = animal.description || 'Нет описания';
+            
+            // ЗАГРУЗКА ФОТО
+            try {
+                const photoResponse = await fetch(`/api/photos/animal/${animal.id}`);
+                if (photoResponse.ok) {
+                    const photos = await photoResponse.json();
+                    if (photos.length > 0 && photos[0].url) {
+                        // Если есть URL фото — показываем его
+                        document.getElementById('animalPhoto').innerHTML = `<img src="${photos[0].url}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    } else {
+                        // Если нет фото — показываем эмодзи
+                        document.getElementById('animalPhoto').innerHTML = animal.type === 'dog' ? '🐕' : '🐈';
+                    }
+                } else {
+                    document.getElementById('animalPhoto').innerHTML = animal.type === 'dog' ? '🐕' : '🐈';
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки фото:', e);
+                document.getElementById('animalPhoto').innerHTML = animal.type === 'dog' ? '🐕' : '🐈';
+            }
+            
+            updateFavoriteButton();
+        }
+
+        function renderDemoAnimal() {
+            currentAnimal = {
+                id: animalId,
+                name: 'Бобик',
+                type: 'dog',
+                age: 'young',
+                size: 'medium',
+                description: 'Ласковый и игривый пёс, любит детей, хорошо ладит с другими животными.'
+            };
+            
+            document.getElementById('animalName').textContent = 'Бобик';
+            document.getElementById('animalAge').textContent = '2 года';
+            document.getElementById('animalType').textContent = 'Собака, дворняга';
+            document.getElementById('animalSize').textContent = 'Средний';
+            document.getElementById('animalPersonality').textContent = 'Дружелюбный, активный';
+            document.getElementById('animalHealth').textContent = 'Привит, стерилизован';
+            document.getElementById('animalDescription').textContent = 'Ласковый и игривый пёс, любит детей, хорошо ладит с другими животными.';
+            document.getElementById('animalPhoto').innerHTML = '🐕';
+            
+            updateFavoriteButton();
+        }
+
+        // Обработчик кнопки "Подать заявку"
+        function goToApplication() {
+            if (currentAnimal) {
+                window.location.href = `/application?animal_id=${animalId}&animal_name=${encodeURIComponent(currentAnimal.name || 'Питомец')}`;
+            } else {
+                window.location.href = `/application?animal_id=${animalId}`;
+            }
+        }
+
+        // Назначаем обработчики после загрузки страницы
+        document.getElementById('addToFavBtn')?.addEventListener('click', toggleFavorite);
+        document.getElementById('applyBtn')?.addEventListener('click', goToApplication);
+
+        // Загружаем данные
+        loadAnimal();
+    </script>
+</body>
+</html>

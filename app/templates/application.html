@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подать заявку — Помощь хвостикам</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-area">
+                <a href="/" class="logo">🐾 <span>Помощь хвостикам</span></a>
+            </div>
+            <button class="auth-btn">Войти / Регистрация</button>
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <a href="/">Поиск</a>
+        <a href="/favorites">Избранное</a>
+        <a href="#">Личный кабинет</a>
+    </div>
+
+    <div class="container">
+        <div class="form-container">
+            <a href="javascript:history.back()" class="back-link">← Назад</a>
+            
+            <h1 id="formTitle">Заявка на усыновление</h1>
+            
+            <form id="applicationForm">
+                <div class="form-group">
+                    <label>Ваше имя *</label>
+                    <input type="text" id="userName" required placeholder="Иван Иванов">
+                </div>
+                
+                <div class="form-group">
+                    <label>Телефон *</label>
+                    <input type="tel" id="userPhone" required placeholder="+7 (XXX) XXX-XX-XX">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="userEmail" required placeholder="ivan@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Комментарий</label>
+                    <textarea id="userComment" placeholder="Расскажите о себе, условиях содержания животного, почему хотите взять именно этого питомца..."></textarea>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="consent" required>
+                    <label>Я согласен(на) на обработку персональных данных</label>
+                </div>
+                
+                <div style="display: flex; gap: 16px; margin-top: 24px;">
+                    <button type="button" class="btn-secondary" onclick="history.back()">Отмена</button>
+                    <button type="submit" class="btn-primary">Отправить заявку</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#">О нас</a>
+                <a href="#">Контакты</a>
+                <a href="#">Политика конфиденциальности</a>
+            </div>
+            <div>© 2026 Помощь хвостикам</div>
+        </div>
+    </footer>
+
+    <script>
+        // Получаем параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const animalId = urlParams.get('animal_id');
+        const animalName = urlParams.get('animal_name') || 'питомца';
+        
+        // Устанавливаем заголовок
+        document.getElementById('formTitle').textContent = `Заявка на усыновление ${animalName}`;
+        
+        // Обработка отправки формы
+        document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                animal_id: parseInt(animalId),
+                user_name: document.getElementById('userName').value,
+                user_phone: document.getElementById('userPhone').value,
+                user_email: document.getElementById('userEmail').value,
+                comment: document.getElementById('userComment').value
+            };
+            
+            console.log('Отправка заявки:', formData);
+            
+            // Здесь будет API запрос
+            alert(`✅ Заявка на ${animalName} успешно отправлена!\n\nС вами свяжется приют в ближайшее время.`);
+            
+            // Перенаправление на страницу с животным
+            window.location.href = `/animal/${animalId}`;
+        });
+    </script>
+</body>
+</html>
