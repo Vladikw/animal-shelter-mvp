@@ -173,25 +173,132 @@
             document.getElementById('animalType').textContent = animal.type === 'dog' ? 'Собака' : 'Кошка';
             document.getElementById('animalSize').textContent = getSizeText(animal.size);
             document.getElementById('animalDescription').textContent = animal.description || 'Нет описания';
-            
-            // ЗАГРУЗКА ФОТО
+          
+            // ЗАГРУЗКА ФОТО С ГАЛЕРЕЕЙ И КНОПКАМИ
             try {
                 const photoResponse = await fetch(`/api/photos/animal/${animal.id}`);
                 if (photoResponse.ok) {
                     const photos = await photoResponse.json();
-                    if (photos.length > 0 && photos[0].url) {
-                        // Если есть URL фото — показываем его
-                        document.getElementById('animalPhoto').innerHTML = `<img src="${photos[0].url}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    const container = document.getElementById('animalPhoto');
+                    
+                    if (photos.length > 0) {
+                        let currentIndex = 0;
+                        
+                        // Очищаем контейнер
+                        container.innerHTML = '';
+                        container.style.position = 'relative';
+                        container.style.display = 'block';
+                        
+                        // Создаем img
+                        const img = document.createElement('img');
+                        img.src = photos[0].url;
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.style.minHeight = '400px';
+                        container.appendChild(img);
+                        
+                        // Если фото больше одного — добавляем кнопки и счетчик
+                        if (photos.length > 1) {
+                            // Счетчик
+                            const counter = document.createElement('div');
+                            counter.id = 'photoCounter';
+                            counter.textContent = `1 / ${photos.length}`;
+                            counter.style.cssText = `
+                                position: absolute;
+                                bottom: 15px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                background: rgba(0,0,0,0.6);
+                                color: white;
+                                padding: 5px 12px;
+                                border-radius: 20px;
+                                font-size: 14px;
+                                font-family: monospace;
+                                z-index: 10;
+                            `;
+                            container.appendChild(counter);
+                            
+                            // Кнопка "влево"
+                            const leftBtn = document.createElement('button');
+                            leftBtn.innerHTML = '❮';
+                            leftBtn.style.cssText = `
+                                position: absolute;
+                                left: 10px;
+                                top: 50%;
+                                transform: translateY(-50%);
+                                background: rgba(0,0,0,0.5);
+                                color: white;
+                                border: none;
+                                width: 40px;
+                                height: 40px;
+                                border-radius: 50%;
+                                font-size: 20px;
+                                cursor: pointer;
+                                z-index: 10;
+                                transition: all 0.2s;
+                            `;
+                            leftBtn.onmouseenter = () => leftBtn.style.background = 'rgba(0,0,0,0.8)';
+                            leftBtn.onmouseleave = () => leftBtn.style.background = 'rgba(0,0,0,0.5)';
+                            leftBtn.onclick = () => {
+                                currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+                                img.src = photos[currentIndex].url;
+                                counter.textContent = `${currentIndex + 1} / ${photos.length}`;
+                            };
+                            
+                            // Кнопка "вправо"
+                            const rightBtn = document.createElement('button');
+                            rightBtn.innerHTML = '❯';
+                            rightBtn.style.cssText = `
+                                position: absolute;
+                                right: 10px;
+                                top: 50%;
+                                transform: translateY(-50%);
+                                background: rgba(0,0,0,0.5);
+                                color: white;
+                                border: none;
+                                width: 40px;
+                                height: 40px;
+                                border-radius: 50%;
+                                font-size: 20px;
+                                cursor: pointer;
+                                z-index: 10;
+                                transition: all 0.2s;
+                            `;
+                            rightBtn.onmouseenter = () => rightBtn.style.background = 'rgba(0,0,0,0.8)';
+                            rightBtn.onmouseleave = () => rightBtn.style.background = 'rgba(0,0,0,0.5)';
+                            rightBtn.onclick = () => {
+                                currentIndex = (currentIndex + 1) % photos.length;
+                                img.src = photos[currentIndex].url;
+                                counter.textContent = `${currentIndex + 1} / ${photos.length}`;
+                            };
+                            
+                            container.appendChild(leftBtn);
+                            container.appendChild(rightBtn);
+                        }
                     } else {
                         // Если нет фото — показываем эмодзи
-                        document.getElementById('animalPhoto').innerHTML = animal.type === 'dog' ? '🐕' : '🐈';
+                        container.innerHTML = animal.type === 'dog' ? '🐕' : '🐈';
+                        container.style.fontSize = '120px';
+                        container.style.display = 'flex';
+                        container.style.alignItems = 'center';
+                        container.style.justifyContent = 'center';
                     }
                 } else {
                     document.getElementById('animalPhoto').innerHTML = animal.type === 'dog' ? '🐕' : '🐈';
+                    document.getElementById('animalPhoto').style.fontSize = '120px';
+                    document.getElementById('animalPhoto').style.display = 'flex';
+                    document.getElementById('animalPhoto').style.alignItems = 'center';
+                    document.getElementById('animalPhoto').style.justifyContent = 'center';
                 }
             } catch (e) {
                 console.error('Ошибка загрузки фото:', e);
-                document.getElementById('animalPhoto').innerHTML = animal.type === 'dog' ? '🐕' : '🐈';
+                const container = document.getElementById('animalPhoto');
+                container.innerHTML = animal.type === 'dog' ? '🐕' : '🐈';
+                container.style.fontSize = '120px';
+                container.style.display = 'flex';
+                container.style.alignItems = 'center';
+                container.style.justifyContent = 'center';
             }
             
             updateFavoriteButton();

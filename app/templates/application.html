@@ -74,34 +74,53 @@
     </footer>
 
     <script>
-        // Получаем параметры из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const animalId = urlParams.get('animal_id');
-        const animalName = urlParams.get('animal_name') || 'питомца';
+    // Получаем параметры из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const animalId = urlParams.get('animal_id');
+    const animalName = urlParams.get('animal_name') || 'питомца';
+    
+    // Устанавливаем заголовок
+    document.getElementById('formTitle').textContent = `Заявка на усыновление ${animalName}`;
+    
+    // Обработка отправки формы
+    document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        // Устанавливаем заголовок
-        document.getElementById('formTitle').textContent = `Заявка на усыновление ${animalName}`;
+        const formData = {
+            animal_id: parseInt(animalId),
+            user_name: document.getElementById('userName').value,
+            user_phone: document.getElementById('userPhone').value,
+            user_email: document.getElementById('userEmail').value,
+            message: document.getElementById('userComment').value  // ←注意: message, не comment
+        };
         
-        // Обработка отправки формы
-        document.getElementById('applicationForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        console.log('Отправка заявки:', formData);
+        
+        try {
+            const response = await fetch('/api/applications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
             
-            const formData = {
-                animal_id: parseInt(animalId),
-                user_name: document.getElementById('userName').value,
-                user_phone: document.getElementById('userPhone').value,
-                user_email: document.getElementById('userEmail').value,
-                comment: document.getElementById('userComment').value
-            };
-            
-            console.log('Отправка заявки:', formData);
-            
-            // Здесь будет API запрос
-            alert(`✅ Заявка на ${animalName} успешно отправлена!\n\nС вами свяжется приют в ближайшее время.`);
-            
-            // Перенаправление на страницу с животным
-            window.location.href = `/animal/${animalId}`;
-        });
-    </script>
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Заявка создана:', result);
+                alert(`✅ Заявка на ${animalName} успешно отправлена!\n\nС вами свяжется приют в ближайшее время.`);
+                window.location.href = `/animal/${animalId}`;
+            } else {
+                const error = await response.json();
+                console.error('Ошибка:', error);
+                alert(`❌ Ошибка: ${error.detail || 'Не удалось отправить заявку'}`);
+            }
+        } catch (error) {
+            console.error('Ошибка соединения:', error);
+            alert('❌ Ошибка соединения с сервером. Убедитесь, что сервер запущен.');
+        }
+    });
+</script>
+
 </body>
 </html>

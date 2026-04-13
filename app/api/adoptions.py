@@ -1,23 +1,25 @@
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select
 from pydantic import BaseModel, Field
 from datetime import datetime
-from models import db_helper, Adoption, AdoptionStatus, Animal, AnimalStatus
+from models import db_helper, Adoption, AdoptionStatus, Animal, AnimalStatus, User, UserRole
 
 router = APIRouter(tags=["Adoptions"], prefix="/applications")
 
 # Pydantic схемы
 class AdoptionCreate(BaseModel):
     animal_id: int
+    user_name: str = Field(..., min_length=1, max_length=200)
+    user_phone: str = Field(..., min_length=1, max_length=20)
+    user_email: str = Field(..., min_length=1, max_length=200)
     message: Optional[str] = None
 
 class AdoptionRead(BaseModel):
     id: int
     animal_id: int
-    animal_name: Optional[str] = None
-    user_name: Optional[str] = None
+    user_id: int
     message: Optional[str] = None
     status: AdoptionStatus
     created_at: datetime
@@ -26,46 +28,11 @@ class AdoptionRead(BaseModel):
     class Config:
         from_attributes = True
 
-class AdoptionUpdateStatus(BaseModel):
-    comment: Optional[str] = None
-
-# GET /applications - список заявок (с фильтрацией по ролям)
-@router.get("", response_model=list[AdoptionRead])
-async def get_applications(
-    session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
-    status: Optional[AdoptionStatus] = Query(None),
-    user_id: Optional[int] = Query(None),
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100)
-):
-    stmt = select(Adoption)
-    if status:
-        stmt = stmt.where(Adoption.status == status)
-    if user_id:
-        stmt = stmt.where(Adoption.user_id == user_id)
-    stmt = stmt.offset(skip).limit(limit)
-    
-    result = await session.execute(stmt)
-    return result.scalars().all()
-
-# GET /applications/{id} - получить заявку по ID
-@router.get("/{adoption_id}", response_model=AdoptionRead)
-async def get_application(
-    adoption_id: int,
-    session: Annotated[AsyncSession, Depends(db_helper.session_getter)]
-):
-    adoption = await session.get(Adoption, adoption_id)
-    if not adoption:
-        raise HTTPException(status_code=404, detail="Application not found")
-    return adoption
-
 # POST /applications - создать заявку
 @router.post("", response_model=AdoptionRead, status_code=status.HTTP_201_CREATED)
 async def create_application(
     session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
     adoption_data: AdoptionCreate,
-    # TODO: получить user_id из JWT токена (пока заглушка)
-    user_id: int = 1  # временно
 ):
     # Проверка существования животного
     animal = await session.get(Animal, adoption_data.animal_id)
@@ -76,9 +43,26 @@ async def create_application(
     if animal.status != AnimalStatus.AVAILABLE:
         raise HTTPException(status_code=400, detail="Animal is not available")
     
+    # Найти или создать пользователя по email
+    stmt = select(User).where(User.email == adoption_data.user_email)
+    result = await session.execute(stmt)
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        # Создаем нового пользователя
+        user = User(
+            name=adoption_data.user_name,
+            email=adoption_data.user_email,
+            phone=adoption_data.user_phone,
+            password_hash="temporary_for_mvp",  # временно, для ПР-04
+            role=UserRole.ADOPTER
+        )
+        session.add(user)
+        await session.flush()  # чтобы получить user.id
+    
     # Создание заявки
     adoption = Adoption(
-        user_id=user_id,
+        user_id=user.id,  # ← теперь правильный user_id!
         animal_id=adoption_data.animal_id,
         message=adoption_data.message,
         status=AdoptionStatus.PENDING
@@ -87,6 +71,8 @@ async def create_application(
     await session.commit()
     await session.refresh(adoption)
     return adoption
+
+
 
 # POST /applications/{id}/approve - одобрить заявку
 @router.post("/{adoption_id}/approve", response_model=AdoptionRead)

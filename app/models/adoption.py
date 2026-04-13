@@ -24,6 +24,10 @@ class Adoption(Base):
     status: Mapped[AdoptionStatus] = mapped_column(Enum(AdoptionStatus), default=AdoptionStatus.PENDING)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+     # ДЛЯ CRM
+    crm_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    crm_synced_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     
     user: Mapped["User"] = relationship(back_populates="adoptions")
     animal: Mapped["Animal"] = relationship(back_populates="adoptions")

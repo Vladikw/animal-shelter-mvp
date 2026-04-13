@@ -116,7 +116,7 @@
             }
             return enriched;
         }
-
+ 
         // Отображение избранного
         async function renderFavorites() {
             let favorites = getFavorites();
@@ -131,48 +131,85 @@
                         <a href="/animals" class="btn-primary" style="margin-top: 20px;">Найти питомца</a>
                     </div>
                 `;
-                // Убираем кнопку очистки
                 const clearBtn = document.getElementById('clearAllBtn');
                 if (clearBtn) clearBtn.remove();
                 return;
             }
 
-            // Показываем индикатор загрузки
             grid.innerHTML = '<div style="text-align:center; padding:60px;">🔄 Загрузка актуальной информации...</div>';
             
-            // Загружаем актуальные данные
-            const enrichedFavorites = await enrichFavoritesWithRealData(favorites);
+            // Загружаем актуальные данные и фото для каждого животного
+            const enrichedFavorites = await Promise.all(favorites.map(async (fav) => {
+                try {
+                    const animalResponse = await fetch(`/api/animals/${fav.id}`);
+                    if (animalResponse.ok) {
+                        const realAnimal = await animalResponse.json();
+                        
+                        // Загружаем фото
+                        let photoUrl = null;
+                        try {
+                            const photoResponse = await fetch(`/api/photos/animal/${fav.id}`);
+                            if (photoResponse.ok) {
+                                const photos = await photoResponse.json();
+                                if (photos.length > 0 && photos[0].url) {
+                                    photoUrl = photos[0].url;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Ошибка загрузки фото:', e);
+                        }
+                        
+                        return {
+                            id: realAnimal.id,
+                            name: realAnimal.name || fav.name,
+                            type: realAnimal.type,
+                            age: realAnimal.age,
+                            size: realAnimal.size,
+                            photoUrl: photoUrl
+                        };
+                    } else {
+                        return { ...fav, photoUrl: null };
+                    }
+                } catch (e) {
+                    console.error(`Ошибка загрузки животного ${fav.id}:`, e);
+                    return { ...fav, photoUrl: null };
+                }
+            }));
             
-            // Обновляем localStorage с актуальными данными
+            // Сохраняем обновленные данные
             saveFavorites(enrichedFavorites);
             
-            // Отображаем карточки
-            grid.innerHTML = enrichedFavorites.map(animal => `
-                <div class="animal-card">
-                    <button class="favorite-btn-card active" onclick="removeFromFavorites(${animal.id})" style="position: absolute; top: 12px; right: 12px; background: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 20px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #f59e0b;">★</button>
-                    <div class="animal-photo" style="height: 200px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 48px;">
-                        ${animal.type === 'dog' ? '🐕' : '🐈'}
+            // Отображаем карточки с фото
+            grid.innerHTML = enrichedFavorites.map(animal => {
+                const photoHtml = animal.photoUrl 
+                    ? `<img src="${animal.photoUrl}" style="width: 100%; height: 100%; object-fit: cover;">` 
+                    : (animal.type === 'dog' ? '🐕' : '🐈');
+                
+                return `
+                    <div class="animal-card">
+                        <button class="favorite-btn-card active" onclick="removeFromFavorites(${animal.id})" style="position: absolute; top: 12px; right: 12px; background: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 20px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #f59e0b;">★</button>
+                        <div class="animal-photo" style="height: 200px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            ${photoHtml}
+                        </div>
+                        <div class="animal-info">
+                            <div class="animal-name" style="font-size: 18px; font-weight: 700;">${escapeHtml(animal.name || 'Безымянный герой')}</div>
+                            <div class="animal-meta" style="font-size: 14px; color: #6b7280; margin: 8px 0;">
+                                ${animal.type === 'dog' ? '🐕 Собака' : '🐈 Кошка'}
+                            </div>
+                            <div class="favorite-age" style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">
+                                📅 ${getAgeText(animal.age)}
+                            </div>
+                            <div class="animal-actions" style="display: flex; gap: 12px;">
+                                <a href="/animal/${animal.id}" class="btn-details" style="flex: 1; text-align: center; background: none; border: 1px solid #10b981; color: #10b981; padding: 8px; border-radius: 8px; text-decoration: none; font-size: 13px;">ПОДРОБНЕЕ →</a>
+                                <button onclick="removeFromFavorites(${animal.id})" class="btn-details" style="flex: 1; border-color: #ef4444; color: #ef4444; background: none; padding: 8px; border-radius: 8px; cursor: pointer;">Удалить</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="animal-info">
-                        <div class="animal-name" style="font-size: 18px; font-weight: 700;">${escapeHtml(animal.name || 'Безымянный герой')}</div>
-                        <div class="animal-meta" style="font-size: 14px; color: #6b7280; margin: 8px 0;">
-                            ${animal.type === 'dog' ? '🐕 Собака' : '🐈 Кошка'}
-                        </div>
-                        <div class="favorite-age" style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">
-                            📅 ${getAgeText(animal.age)}
-                        </div>
-                        <div class="animal-actions" style="display: flex; gap: 12px;">
-                            <a href="/animal/${animal.id}" class="btn-details" style="flex: 1; text-align: center; background: none; border: 1px solid #10b981; color: #10b981; padding: 8px; border-radius: 8px; text-decoration: none; font-size: 13px;">ПОДРОБНЕЕ →</a>
-                            <button onclick="removeFromFavorites(${animal.id})" class="btn-details" style="flex: 1; border-color: #ef4444; color: #ef4444; background: none; padding: 8px; border-radius: 8px; cursor: pointer;">Удалить</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
-            // Добавляем кнопку "Очистить всё"
             addClearButton();
         }
-
         function addClearButton() {
             const container = document.getElementById('favoritesContainer');
             let clearBtn = document.getElementById('clearAllBtn');
