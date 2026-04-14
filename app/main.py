@@ -50,6 +50,12 @@ async def animal_card_page(animal_id: int):
     with open("templates/animal_card.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
+
+@main_app.get("/shelter-panel", response_class=HTMLResponse)
+async def shelter_panel():
+    with open("templates/shelter_panel.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:main_app",

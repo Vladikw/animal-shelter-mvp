@@ -113,3 +113,15 @@ async def delete_animal(
     
     await session.delete(animal)
     await session.commit()
+
+@router.get("/shelter/{shelter_id}", response_model=list[AnimalRead])
+async def get_animals_by_shelter(
+    shelter_id: int,
+    session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000)
+):
+    """Получить всех животных конкретного приюта (для панели сотрудника)"""
+    stmt = select(Animal).where(Animal.shelter_id == shelter_id).offset(skip).limit(limit)
+    result = await session.execute(stmt)
+    return result.scalars().all()
