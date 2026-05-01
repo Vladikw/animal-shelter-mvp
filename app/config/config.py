@@ -33,5 +33,7 @@ class Settings(BaseSettings):
     url: UrlPrefix = UrlPrefix()
     db: DatabaseConfig
 
+    bitrix24_webhook_url: str 
+
 
 settings = Settings()

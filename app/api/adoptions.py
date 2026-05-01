@@ -5,6 +5,7 @@ from sqlalchemy import select
 from pydantic import BaseModel, Field
 from datetime import datetime
 from models import db_helper, Adoption, AdoptionStatus, Animal, AnimalStatus, User, UserRole
+from core.bitrix24 import send_to_bitrix
 
 router = APIRouter(tags=["Adoptions"], prefix="/applications")
 
@@ -68,6 +69,16 @@ async def create_application(
         status=AdoptionStatus.PENDING
     )
     session.add(adoption)
+    try:
+        await send_to_bitrix(
+            user_name=adoption_data.user_name,
+            user_phone=adoption_data.user_phone,
+            user_email=adoption_data.user_email,
+            animal_id=adoption_data.animal_id,
+            message=adoption_data.message or ""
+        )
+    except Exception as e: 
+        print(f"❌ Ошибка отправки в Битрикс24: {e}")
     await session.commit()
     await session.refresh(adoption)
     return adoption

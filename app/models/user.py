@@ -34,3 +34,6 @@ class User(Base):
     favorites: Mapped[list["Favorite"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     notifications: Mapped[list["Notification"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     adoptions: Mapped[list["Adoption"]] = relationship(back_populates="user")
+
+
+    
